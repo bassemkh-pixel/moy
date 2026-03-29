@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculateur de Moyenne — ISG Gabès</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2234;
+    --border: #1f2d44;
+    --accent: #2563eb;
+    --accent2: #3b82f6;
+    --gold: #f59e0b;
+    --gold2: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glowing orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 40px 0 30px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .logo {
+    width: 54px; height: 54px;
+    background: linear-gradient(135deg, var(--accent), #1d4ed8);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 18px;
+    color: #fff;
+    box-shadow: 0 0 30px rgba(37,99,235,0.4);
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header-text h1 span { color: var(--gold); }
+
+  .header-text p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* ─── STEP SELECTOR ─── */
+  .step-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+
+  .step.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(37,99,235,0.35);
+  }
+
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+
+  /* ─── PANELS ─── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+  }
+
+  .panel-title .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(37,99,235,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  /* ─── SELECTS & INPUTS ─── */
+  select, input[type="number"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  select:focus, input[type="number"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.2); }
+
+  select option { background: #1a2234; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── SEMESTER TABS ─── */
+  .sem-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    background: var(--surface2);
+    padding: 5px;
+    border-radius: 10px;
+    width: fit-content;
+  }
+
+  .sem-tab {
+    padding: 8px 20px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+    border: none;
+    background: transparent;
+    transition: all 0.2s;
+  }
+
+  .sem-tab.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+  }
+
+  /* ─── SUBJECTS TABLE ─── */
+  .subjects-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .subjects-table th {
+    padding: 10px 12px;
+    text-align: left;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .subjects-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(31,45,68,0.5);
+    vertical-align: middle;
+  }
+
+  .subjects-table tr:last-child td { border-bottom: none; }
+
+  .subjects-table tr:hover td { background: rgba(37,99,235,0.04); }
+
+  .ue-row td {
+    background: rgba(37,99,235,0.06);
+    font-weight: 600;
+    color: var(--accent2);
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .subject-name {
+    font-weight: 400;
+    color: var(--text);
+    max-width: 280px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-fond { background: rgba(37,99,235,0.2); color: #60a5fa; }
+  .badge-opt  { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .badge-trans { background: rgba(16,185,129,0.2); color: #34d399; }
+
+  .coeff-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  input[type="number"].note-input {
+    width: 80px;
+    text-align: center;
+    padding: 7px 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .note-display {
+    width: 80px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  /* ─── RESULT CARD ─── */
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .result-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+
+  .result-card:hover { transform: translateY(-2px); }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+  }
+
+  .result-card.main::before { background: var(--gold); height: 4px; }
+
+  .result-card .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .result-card .value {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .result-card.main .value { color: var(--gold); font-size: 48px; }
+
+  .result-card .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Mention badge */
+  .mention-badge {
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 40px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+
+  .mention-tb { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+  .mention-b  { background: rgba(37,99,235,0.2); color: #60a5fa; border: 1px solid rgba(37,99,235,0.3); }
+  .mention-ab { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .mention-p  { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .mention-r  { background: rgba(100,116,139,0.2); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+
+  /* ─── UE BREAKDOWN TABLE ─── */
+  .breakdown-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .breakdown-table th { padding: 8px 12px; text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); font-weight: 500; }
+  .breakdown-table td { padding: 10px 12px; border-bottom: 1px solid rgba(31,45,68,0.5); }
+  .breakdown-table tr:last-child td { border-bottom: none; }
+
+  .prog-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    overflow: hidden;
+  }
+
+  .prog-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    transition: width 0.5s ease;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+  }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { background: var(--border); }
+
+  .btn-gold {
+    background: var(--gold);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+
+  .action-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    align-items: center;
+  }
+
+  /* ─── MISC ─── */
+  .hidden { display: none !important; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  .note-color-10 { color: var(--success); }
+  .note-color-7  { color: var(--warning); }
+  .note-color-0  { color: var(--danger); }
+
+  footer {
+    text-align: center;
+    padding: 40px 0 30px;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+
+  footer span { color: var(--accent2); }
+
+  @media (max-width: 640px) {
+    .panel { padding: 18px; }
+    .header-inner { flex-direction: column; align-items: flex-start; }
+    .subjects-table th:nth-child(2), .subjects-table td:nth-child(2) { display: none; }
+    .result-card .value { font-size: 28px; }
+    .result-card.main .value { font-size: 40px; }
+  }
+
+  /* Scroll bar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .table-wrap { overflow-x: auto; }
+
+  .info-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(37,99,235,0.12);
+    border: 1px solid rgba(37,99,235,0.25);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--accent2);
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">ISG</div>
+      <div class="header-text">
+        <h1>Calculateur de Moyenne <span>Universitaire</span></h1>
+        <p>Institut Supérieur de Gestion de Gabès — Tous Mastères &amp; Licences</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- STEP BAR -->
+  <div class="step-bar">
+    <div class="step active" id="s1"><div class="step-num">1</div> Choisir le programme</div>
+    <div class="step" id="s2"><div class="step-num">2</div> Saisir les notes</div>
+    <div class="step" id="s3"><div class="step-num">3</div> Voir les résultats</div>
+  </div>
+
+  <!-- STEP 1: SELECTION -->
+  <div id="step1">
+    <div class="panel">
+      <div class="panel-title"><div class="icon">🎓</div> Sélection du programme</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Type de diplôme</label>
+          <select id="selType" onchange="updateSpecialite()">
+            <option value="">— Choisir —</option>
+            <option value="master">Mastère Professionnel (MP)</option>
+            <option value="masterre">Mastère de Recherche (MR)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Spécialité</label>
+          <select id="selSpec" onchange="updateSemestres()" disabled>
+            <option value="">— d'abord choisir le type —</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Semestre</label>
+          <select id="selSem" disabled>
+            <option value="">— d'abord choisir la spécialité —</option>
+          </select>
+        </div>
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="loadSubjects()">⚡ Charger les matières</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: NOTES ENTRY -->
+  <div id="step2" class="hidden">
+    <div class="panel">
+      <div class="panel-title" id="step2Title"><div class="icon">✏️</div> Saisie des notes</div>
+      <div id="infoChips"></div>
+      <div class="sem-tabs" id="semTabs"></div>
+      <div class="table-wrap">
+        <table class="subjects-table">
+          <thead>
+            <tr>
+              <th>Matière (ECUE)</th>
+              <th>Type UE</th>
+              <th>Crédits</th>
+              <th>Coeff.</th>
+              <th>Note /20</th>
+            </tr>
+          </thead>
+          <tbody id="subjectsBody"></tbody>
+        </table>
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-gold" onclick="calculate()">🧮 Calculer la moyenne</button>
+        <button class="btn btn-secondary" onclick="clearNotes()">🗑 Effacer les notes</button>
+        <button class="btn btn-secondary" onclick="goBack()">← Retour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: RESULTS -->
+  <div id="step3" class="hidden">
+    <div class="panel">
+      <div class="panel-title"><div class="icon">📊</div> Résultats</div>
+
+      <div class="result-grid" id="resultCards"></div>
+
+      <div class="panel-title" style="margin-top: 20px;"><div class="icon">📋</div> Détail par Unité d'Enseignement</div>
+      <div class="table-wrap">
+        <table class="breakdown-table" id="breakdownTable">
+          <thead><tr>
+            <th>UE</th><th>Moyenne UE</th><th>Crédits</th><th>Progression</th>
+          </tr></thead>
+          <tbody id="breakdownBody"></tbody>
+        </table>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="goToStep2()">← Modifier les notes</button>
+        <button class="btn btn-secondary" onclick="printResult()">🖨 Imprimer</button>
+        <button class="btn btn-secondary" onclick="goBack()">🏠 Recommencer</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Calculateur de Moyenne — <span>ISG Gabès</span> &nbsp;|&nbsp; Développé par Bassem Kharchoufi
+  </footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA — PROGRAMMES ISG GABÈS
+// ═══════════════════════════════════════════════════════
+const PROGRAMMES = {
+  master: {
+    "MP CE": {
+      name: "Commerce Électronique",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Algorithme, Programmation & Systèmes", type: "Fondamentale", ecues: [
+            { name: "Architectures et Systèmes Informatiques", credits: 3, coeff: 1.5 },
+            { name: "Programmation Java Avancée", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Modélisation des Systèmes d'information", type: "Fondamentale", ecues: [
+            { name: "Système d'Information Avancés", credits: 4, coeff: 2 },
+            { name: "Système de Gestion de Bases de Données", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Technologie Web", type: "Fondamentale", ecues: [
+            { name: "Développement Web Avancés", credits: 4, coeff: 2 },
+            { name: "Techniques de développement des applications de CE", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Unité Optionnelle 4", type: "Optionnelle", ecues: [
+            { name: "Droit de e-commerce 1", credits: 2, coeff: 1 },
+            { name: "Recherche d'information et indexation", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Multimédia de CE", type: "Optionnelle", ecues: [
+            { name: "Langage de Manipulation Multimédia", credits: 2, coeff: 1 },
+            { name: "Développement de jeux", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Développement et Analyse", type: "Fondamentale", ecues: [
+            { name: "Datawarehouse et Datamining", credits: 3, coeff: 1.5 },
+            { name: "Développement Mobile", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Web Management", type: "Fondamentale", ecues: [
+            { name: "Stratégie commerciale et Web", credits: 3, coeff: 1.5 },
+            { name: "Management d'une entreprise e-commerce", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Droits e Business", type: "Fondamentale", ecues: [
+            { name: "Droit de l'informatique et de l'internet", credits: 3, coeff: 1.5 },
+            { name: "Anglais des Affaires 2", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Unité Optionnelle 9", type: "Optionnelle", ecues: [
+            { name: "Gestion de projet par objectifs", credits: 2, coeff: 1 },
+            { name: "Cyber Marketing", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Technologie Web 2", type: "Optionnelle", ecues: [
+            { name: "Programmation des serveurs Web 2 (JSP)", credits: 4, coeff: 2 },
+            { name: "Administration des serveurs Web", credits: 3, coeff: 1.5 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Développement et Exploitation Web", type: "Fondamentale", ecues: [
+            { name: "Interface Homme-Machine", credits: 4, coeff: 2 },
+            { name: "Ontologies et Web Sémantique", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Sécurité Web", type: "Fondamentale", ecues: [
+            { name: "Audit et sécurité des systèmes de CE", credits: 3, coeff: 1.5 },
+            { name: "Sécurité des transactions électroniques", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Droit et langue", type: "Fondamentale", ecues: [
+            { name: "Anglais des affaires 2", credits: 2, coeff: 1 },
+            { name: "Droit du e-commerce 2", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Unité Optionnelle 4", type: "Optionnelle", ecues: [
+            { name: "Management et construction d'équipes", credits: 2, coeff: 1 },
+            { name: "E-banking", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Technologie Multimédia 2", type: "Optionnelle", ecues: [
+            { name: "Animation et programmation 2D", credits: 3, coeff: 1.5 },
+            { name: "Intégration et conception multimédia", credits: 3, coeff: 1.5 }
+          ]}
+        ]
+      }
+    },
+    "MP IDM": {
+      name: "Ingénierie et Développement Mobile",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Technologie Web", type: "Fondamentale", ecues: [
+            { name: "Techniques de développement d'applications Web", credits: 3, coeff: 1.5 },
+            { name: "Atelier de techniques de développement d'applications Web", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Concepts fondamentaux sur les réseaux mobiles", type: "Fondamentale", ecues: [
+            { name: "Atelier de Technologies d'accès mobiles", credits: 3, coeff: 1.5 },
+            { name: "Réseaux et Technologies d'accès mobiles", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Développements pour plateformes mobiles", type: "Fondamentale", ecues: [
+            { name: "Atelier de développement d'applications Mobiles", credits: 3, coeff: 1.5 },
+            { name: "Développements d'applications mobiles", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Systèmes d'exploitations mobiles", type: "Fondamentale", ecues: [
+            { name: "Atelier d'architecture et système d'exploitation mobiles", credits: 2, coeff: 1 },
+            { name: "Systèmes d'exploitation mobiles", credits: 2, coeff: 1 },
+            { name: "Architectures des terminaux mobiles", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Unité Optionnelle complément", type: "Optionnelle", ecues: [
+            { name: "Architecture Orientée Services", credits: 2, coeff: 1 },
+            { name: "Environnement de développement iOS", credits: 2, coeff: 1 },
+            { name: "Langage Swift", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Environnement d'interaction Homme Machine", type: "Fondamentale", ecues: [
+            { name: "Interface et expérience Utilisateur", credits: 3, coeff: 1.5 },
+            { name: "Atelier d'interface Homme Machine", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Développement pour plateformes hétérogènes", type: "Fondamentale", ecues: [
+            { name: "Atelier de développement pour plateformes hétérogènes", credits: 2, coeff: 1 },
+            { name: "Services Mobiles", credits: 2, coeff: 1 },
+            { name: "Framework de développement mobiles", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Techniques de développements Agile", type: "Fondamentale", ecues: [
+            { name: "Atelier de techniques de développement Agile", credits: 3, coeff: 1.5 },
+            { name: "Méthodes Agiles pour les applications mobiles", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Fournisseurs de données mobiles", type: "Fondamentale", ecues: [
+            { name: "Bases de données pour applications mobiles", credits: 3, coeff: 1.5 },
+            { name: "Atelier de fournisseurs de données mobiles", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Projet Personnalisé 1", type: "Optionnelle", ecues: [
+            { name: "Séminaires", credits: 2, coeff: 1 },
+            { name: "Développement pour plateformes hétérogènes (crossPlatform)", credits: 2, coeff: 1 },
+            { name: "Projet Personnel", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Sécurité des applications mobiles", type: "Fondamentale", ecues: [
+            { name: "Atelier de sécurité des applications mobiles", credits: 3, coeff: 1.5 },
+            { name: "Sécurité des applications mobiles", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Gestions de projets", type: "Fondamentale", ecues: [
+            { name: "Atelier management de projets", credits: 2, coeff: 1 },
+            { name: "Management de Projets", credits: 2, coeff: 1 },
+            { name: "Architectures logicielles", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Commerce mobile", type: "Fondamentale", ecues: [
+            { name: "Etudes de cas du commerce mobile", credits: 3, coeff: 1.5 },
+            { name: "Commerce mobile", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Recherche, développement et innovation", type: "Fondamentale", ecues: [
+            { name: "Communication scientifique", credits: 3, coeff: 1.5 },
+            { name: "Entreprenariat et innovation", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Projet Personnalisé 2", type: "Optionnelle", ecues: [
+            { name: "Projet Personnel", credits: 3, coeff: 1.5 },
+            { name: "Séminaires", credits: 2, coeff: 1 },
+            { name: "Modélisation et animation 2D/3D et réalité augmentée", credits: 2, coeff: 1 }
+          ]}
+        ]
+      }
+    },
+    "MP CCA": {
+      name: "Comptabilité, Contrôle & Audit",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Comptabilité", type: "Fondamentale", ecues: [
+            { name: "Évaluation et regroupements d'entreprises", credits: 3, coeff: 1.5 },
+            { name: "Normes internationales d'information financière (1)", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Droits et langue", type: "Fondamentale", ecues: [
+            { name: "Droit des sociétés commerciales approfondi", credits: 3, coeff: 1.5 },
+            { name: "Anglais des affaires", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Finance et économie", type: "Fondamentale", ecues: [
+            { name: "Economie internationale", credits: 2, coeff: 1 },
+            { name: "Marché financier et évaluation des actifs", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Fiscalité approfondie", type: "Fondamentale", ecues: [
+            { name: "Fiscalité indirecte avancée", credits: 3, coeff: 1.5 },
+            { name: "Fiscalité directe avancée", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Contrôle interne et contrôle de gestion", type: "Fondamentale", ecues: [
+            { name: "Contrôle de gestion (approfondie et stratégique)", credits: 4, coeff: 2 },
+            { name: "Contrôle interne : référentiel COSO", credits: 3, coeff: 1.5 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Audit et comptabilité", type: "Fondamentale", ecues: [
+            { name: "Normes internationales d'information (2)", credits: 3, coeff: 1.5 },
+            { name: "Audit financier", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Fiscalité et Droit", type: "Fondamentale", ecues: [
+            { name: "Droit des Procédures collectives", credits: 3, coeff: 1.5 },
+            { name: "Les avantages fiscaux", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Gestion et arbitrage", type: "Fondamentale", ecues: [
+            { name: "Management des systèmes d'information", credits: 4, coeff: 2 },
+            { name: "Expertise judiciaire et arbitrage", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Finance", type: "Fondamentale", ecues: [
+            { name: "Ingénierie financière", credits: 2, coeff: 1 },
+            { name: "Finance d'entreprise", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Outils de professionnalisation", type: "Fondamentale", ecues: [
+            { name: "Techniques de sondage", credits: 3, coeff: 1.5 },
+            { name: "Code d'éthique", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Comptabilité Et Finance", type: "Fondamentale", ecues: [
+            { name: "Commissariat (aux comptes et aux apports)", credits: 4, coeff: 2 },
+            { name: "Finance internationale", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Fiscalité approfondie", type: "Fondamentale", ecues: [
+            { name: "Contrôle et contentieux en matière fiscale", credits: 3, coeff: 1.5 },
+            { name: "Fiscalité internationale", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Consolidation et stratégie d'entreprise", type: "Fondamentale", ecues: [
+            { name: "Stratégie de l'entreprise", credits: 3, coeff: 1.5 },
+            { name: "Consolidation des états financiers", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Droits", type: "Fondamentale", ecues: [
+            { name: "Droit pénal des affaires", credits: 3, coeff: 1.5 },
+            { name: "Droit de la Concurrence", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Outils de présentation du mémoire de PFE", type: "Fondamentale", ecues: [
+            { name: "Méthodologie de recherche", credits: 2, coeff: 1 },
+            { name: "Communication Orale", credits: 2, coeff: 1 }
+          ]}
+        ]
+      }
+    },
+    "MP FSDD": {
+      name: "Finance Solidaire et Développement Durable",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Environnement et Développement", type: "Fondamentale", ecues: [
+            { name: "Environnement et Développement durable", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Finance de l'entreprise", type: "Fondamentale", ecues: [
+            { name: "Finance de l'entreprise", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Finance sociale", type: "Fondamentale", ecues: [
+            { name: "Finance sociale", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Energie", type: "Fondamentale", ecues: [
+            { name: "Efficience énergétique", credits: 2, coeff: 1 },
+            { name: "Transition énergétique et énergies renouvelables", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Soft skills", type: "Fondamentale", ecues: [
+            { name: "Visual Basic for Applications", credits: 3, coeff: 1.5 },
+            { name: "Anglais des affaires", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Fiscalité et contrôle", type: "Fondamentale", ecues: [
+            { name: "Contrôle interne", credits: 2, coeff: 1 },
+            { name: "Fiscalité", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Finance durable", type: "Fondamentale", ecues: [
+            { name: "Finance durable", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Gouvernance", type: "Fondamentale", ecues: [
+            { name: "Gouvernance des entreprises et pilotage de performance", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Audit", type: "Fondamentale", ecues: [
+            { name: "Audit comptable et financier", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Finance solidaire et analyse", type: "Fondamentale", ecues: [
+            { name: "Analyse multivariée", credits: 4, coeff: 2 },
+            { name: "Les nouvelles pratiques de financement de projet solidaire", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Soft skills", type: "Fondamentale", ecues: [
+            { name: "Système d'informations pour les financiers", credits: 4, coeff: 2 },
+            { name: "Coaching et leaderships", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Reporting sociétal", type: "Fondamentale", ecues: [
+            { name: "Reporting sociétal", credits: 4, coeff: 2 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Econométrie", type: "Fondamentale", ecues: [
+            { name: "Econométrie avancée", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "RSE", type: "Fondamentale", ecues: [
+            { name: "Conception et élaboration du politique RSE", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Finance et sécurité", type: "Fondamentale", ecues: [
+            { name: "Protection et sécurité sociale", credits: 2, coeff: 1 },
+            { name: "Finance digitale et développement durable", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Soft skills", type: "Fondamentale", ecues: [
+            { name: "Méthodologie de rédaction d'un rapport de stage", credits: 2, coeff: 1 },
+            { name: "Français", credits: 2, coeff: 1 },
+            { name: "Business Plan", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Entrepreneuriat et management du projet", type: "Fondamentale", ecues: [
+            { name: "Management stratégique", credits: 2, coeff: 1 },
+            { name: "Planification financière et création d'entreprise", credits: 5, coeff: 2.5 }
+          ]}
+        ]
+      }
+    },
+    "MP ENTREPRENEURIAT": {
+      name: "Entrepreneuriat",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Entrepreneuriat", type: "Fondamentale", ecues: [
+            { name: "Entrepreneuriat", credits: 4, coeff: 3 },
+            { name: "Environnement local et dispositif d'appui", credits: 3, coeff: 2 }
+          ]},
+          { ue: "Management", type: "Fondamentale", ecues: [
+            { name: "Management stratégique", credits: 2, coeff: 2 },
+            { name: "Management et pilotage des projets", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Finance", type: "Fondamentale", ecues: [
+            { name: "Analyse financière", credits: 4, coeff: 3 },
+            { name: "Planification financière d'un projet", credits: 3, coeff: 2 }
+          ]},
+          { ue: "Comptabilité", type: "Optionnelle", ecues: [
+            { name: "Droit commercial", credits: 2, coeff: 1.5 },
+            { name: "Techniques comptables et lecture des états financiers", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Soft skills", type: "Transversale", ecues: [
+            { name: "Anglais des affaires", credits: 2, coeff: 1 },
+            { name: "Développement personnel et leadership", credits: 2, coeff: 1.5 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "GRH interculturel", type: "Fondamentale", ecues: [
+            { name: "Management international", credits: 3, coeff: 2 },
+            { name: "GRH et management d'équipe", credits: 4, coeff: 3 }
+          ]},
+          { ue: "Innovation et création", type: "Fondamentale", ecues: [
+            { name: "Gestion de l'innovation", credits: 4, coeff: 2 },
+            { name: "Motivations du créateur", credits: 2, coeff: 2 }
+          ]},
+          { ue: "Logistique et certification", type: "Fondamentale", ecues: [
+            { name: "Certification et Normalisation", credits: 3, coeff: 2 },
+            { name: "Supply chain management", credits: 4, coeff: 3 }
+          ]},
+          { ue: "Marketing", type: "Optionnelle", ecues: [
+            { name: "TIC, e-business et Web Marketing", credits: 2, coeff: 1 },
+            { name: "Marketing et étude du marché", credits: 3, coeff: 2 }
+          ]},
+          { ue: "Droit et Fiscalité", type: "Transversale", ecues: [
+            { name: "Droit pénal des affaires", credits: 2, coeff: 1 },
+            { name: "Fiscalité des entreprises", credits: 3, coeff: 2 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Etudes et évaluations des projets", type: "Fondamentale", ecues: [
+            { name: "Pratique de reprise et évaluation des projets", credits: 3, coeff: 2 },
+            { name: "Réalisation pratique d'un plan d'affaires", credits: 4, coeff: 3 }
+          ]},
+          { ue: "Méthodologie et analyse des données", type: "Fondamentale", ecues: [
+            { name: "Séminaire de formation et méthodologie de recherche appliquée", credits: 2, coeff: 2 },
+            { name: "Analyse informatisée des données", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Système d'information et veille", type: "Fondamentale", ecues: [
+            { name: "Management des systèmes d'information", credits: 4, coeff: 2 },
+            { name: "Veille stratégique", credits: 2, coeff: 1.5 }
+          ]},
+          { ue: "Communication", type: "Optionnelle", ecues: [
+            { name: "Nouveaux outils de communication", credits: 3, coeff: 2 },
+            { name: "Négociation", credits: 4, coeff: 3 }
+          ]},
+          { ue: "Informatique et techniques d'expression", type: "Transversale", ecues: [
+            { name: "Outils informatiques appliquées au management", credits: 2, coeff: 1.5 },
+            { name: "Techniques d'expression", credits: 2, coeff: 1 }
+          ]}
+        ]
+      }
+    },
+    "MP IF": {
+      name: "Ingénierie Financière",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Crypto monnaie", type: "Fondamentale", ecues: [
+            { name: "Crypto monnaie", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Gestion de trésorerie et planification", type: "Fondamentale", ecues: [
+            { name: "Gestion de la trésorerie et planification financière", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Finance internationale et gouvernance", type: "Fondamentale", ecues: [
+            { name: "Pilotage et gouvernance des entreprises", credits: 3, coeff: 1.5 },
+            { name: "Finance Internationale", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Décision financière", type: "Fondamentale", ecues: [
+            { name: "Prise de décision financière et création de valeur", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Fiscalité et droit", type: "Fondamentale", ecues: [
+            { name: "Droit des institutions financières", credits: 2, coeff: 1 },
+            { name: "Fiscalité approfondie", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Softs skills", type: "Fondamentale", ecues: [
+            { name: "TIC : informatique appliquée à la finance VBA", credits: 2, coeff: 1 },
+            { name: "Anglais des affaires", credits: 4, coeff: 2 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Informations financières et Gestion des risques bancaires", type: "Fondamentale", ecues: [
+            { name: "Informations financières et Gestion des risques bancaires", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Gestion des produits dérivés", type: "Fondamentale", ecues: [
+            { name: "Gestion des produits dérivés", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Contrôle de gestion et comptabilité bancaire", type: "Fondamentale", ecues: [
+            { name: "Comptabilité des institutions financières", credits: 3, coeff: 1.5 },
+            { name: "Contrôle de gestion avancé", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Simulation et diagnostic", type: "Fondamentale", ecues: [
+            { name: "Diagnostic financier et évaluation d'entreprise", credits: 4, coeff: 2 },
+            { name: "Principe de simulation : Trading", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Softs skills", type: "Fondamentale", ecues: [
+            { name: "Système d'information pour les financiers", credits: 4, coeff: 2 },
+            { name: "Coaching et leadership", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Gestion de l'assurance", type: "Fondamentale", ecues: [
+            { name: "Gestion de l'assurance", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Analyse des données", type: "Fondamentale", ecues: [
+            { name: "Analyse des données", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Finance comportementale", type: "Fondamentale", ecues: [
+            { name: "Finance comportementale", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Innovation et produits financiers islamiques", type: "Fondamentale", ecues: [
+            { name: "Gestion des produits financiers islamiques", credits: 2, coeff: 1 },
+            { name: "Techniques bancaires et innovation technologique", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Ingénierie financière", type: "Fondamentale", ecues: [
+            { name: "Ingénierie financière avancée", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Softs skills", type: "Fondamentale", ecues: [
+            { name: "Méthodologie de rédaction d'un PFE", credits: 4, coeff: 2 },
+            { name: "Business Plan", credits: 2, coeff: 1 }
+          ]}
+        ]
+      }
+    },
+    "MP GDT": {
+      name: "Gestion et Développement du Tourisme",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Management Touristique", type: "Fondamentale", ecues: [
+            { name: "Les fondamentaux de la gestion touristique", credits: 4, coeff: 2 },
+            { name: "Management de la qualité touristique", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Management relationnel (amont/aval)", type: "Fondamentale", ecues: [
+            { name: "Supply Chain Management", credits: 2, coeff: 1 },
+            { name: "Customer Relationship Management", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Entrepreneuriat et gestion de projet", type: "Fondamentale", ecues: [
+            { name: "Management de projet", credits: 4, coeff: 2 },
+            { name: "Business Plan", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Culture générale et soft skills", type: "Transversale", ecues: [
+            { name: "Communication interpersonnelle", credits: 2, coeff: 1 },
+            { name: "Anglais des affaires", credits: 4, coeff: 2 }
+          ]},
+          { ue: "TIC et formations opérationnelles", type: "Transversale", ecues: [
+            { name: "Design Thinking", credits: 2, coeff: 1 },
+            { name: "Développement web", credits: 4, coeff: 2 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Management stratégique de la destination touristique", type: "Fondamentale", ecues: [
+            { name: "Gestion de la destination touristique", credits: 4, coeff: 2 },
+            { name: "Système d'information territorial", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Innovation et tourisme", type: "Fondamentale", ecues: [
+            { name: "Management de l'innovation", credits: 4, coeff: 2 },
+            { name: "Diversification des produits touristiques", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Certification et responsabilité sociétale dans le tourisme", type: "Fondamentale", ecues: [
+            { name: "Ethique, développement durable et écotourisme", credits: 4, coeff: 2 },
+            { name: "Certification et labellisation régionale", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Culture générale et soft skills", type: "Transversale", ecues: [
+            { name: "PNL Programmation neurolinguistique", credits: 2, coeff: 1 },
+            { name: "Actualités socio-politiques", credits: 2, coeff: 1 },
+            { name: "Leadership de proximité", credits: 2, coeff: 1 }
+          ]},
+          { ue: "TIC et formations opérationnelles", type: "Transversale", ecues: [
+            { name: "Business Games", credits: 2, coeff: 1 },
+            { name: "Infographie", credits: 4, coeff: 2 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Management Touristique", type: "Fondamentale", ecues: [
+            { name: "Gestion des coûts en tourisme", credits: 2, coeff: 1 },
+            { name: "Yield Management", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Gestion interculturelle", type: "Fondamentale", ecues: [
+            { name: "Culture touristique et patrimoniale", credits: 2, coeff: 1 },
+            { name: "Management interculturel", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Marketing digital et expérience client", type: "Fondamentale", ecues: [
+            { name: "Marketing digital", credits: 4, coeff: 2 },
+            { name: "Gestion évènementielle et expérientielle", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Culture générale et soft skills", type: "Transversale", ecues: [
+            { name: "Economie contemporaine", credits: 4, coeff: 2 },
+            { name: "Développement personnel", credits: 2, coeff: 1 }
+          ]},
+          { ue: "TIC et formations opérationnelles", type: "Transversale", ecues: [
+            { name: "Etude de cas", credits: 2, coeff: 1 },
+            { name: "Analyse des données", credits: 4, coeff: 2 }
+          ]}
+        ]
+      }
+    }
+  },
+  masterre: {
+    "MR FINANCE": {
+      name: "Finance",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Finance", type: "Fondamentale", ecues: [
+            { name: "Finance d'entreprise approfondie", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Finance internationale", type: "Fondamentale", ecues: [
+            { name: "Finance internationale avancée", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Marchés et ingénierie financière", type: "Fondamentale", ecues: [
+            { name: "Gestion bancaire", credits: 2, coeff: 1 },
+            { name: "Financial market", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Econométrie 1", type: "Fondamentale", ecues: [
+            { name: "Econométrie des séries temporelles", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Langues et outils de recherche 1", type: "Fondamentale", ecues: [
+            { name: "Initiation à la méthodologie de recherche", credits: 3, coeff: 1.5 },
+            { name: "Anglais appliqué à la recherche 1", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Analyse et application", type: "Fondamentale", ecues: [
+            { name: "Analyse des données", credits: 4, coeff: 2 },
+            { name: "Programmation VBA", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Théorie financière", type: "Fondamentale", ecues: [
+            { name: "Théorie financière approfondie", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Marché et portefeuille", type: "Fondamentale", ecues: [
+            { name: "Marché action et gestion du portefeuille", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Marchés financiers", type: "Fondamentale", ecues: [
+            { name: "Microstructure des marchés financiers", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Risk management", type: "Fondamentale", ecues: [
+            { name: "Financial derivative products and risk management", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Econométrie 2", type: "Fondamentale", ecues: [
+            { name: "Econométrie avancée", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Langues et outils de recherche 2", type: "Fondamentale", ecues: [
+            { name: "Analyse multi variées", credits: 3, coeff: 1.5 },
+            { name: "Epistémologie de recherche", credits: 2, coeff: 1 },
+            { name: "Anglais appliqué à la recherche 2", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Gouvernance", type: "Fondamentale", ecues: [
+            { name: "Research on Corporate Governance", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Finance comportementale", type: "Fondamentale", ecues: [
+            { name: "Finance comportementale", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Finance et RSE", type: "Fondamentale", ecues: [
+            { name: "Finance éthique et RSE", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Econométrie et fintech", type: "Fondamentale", ecues: [
+            { name: "Méthodes économétriques appliquées (STATA, MATLAB, R)", credits: 4, coeff: 2 },
+            { name: "Finance digitale", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Fusions et acquisitions", type: "Fondamentale", ecues: [
+            { name: "Fusions et acquisitions : Introduction en bourse", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Langues et outils de recherche 3", type: "Fondamentale", ecues: [
+            { name: "English for scientific research", credits: 2, coeff: 1 },
+            { name: "Séminaires de recherche et principes de rédaction scientifique", credits: 3, coeff: 1.5 }
+          ]}
+        ]
+      }
+    },
+    "MR IDG": {
+      name: "Informatique Décisionnelle et Gestion",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Méthodes intelligentes et raisonnement", type: "Fondamentale", ecues: [
+            { name: "Méthodes Intelligentes et Raisonnement", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Statistiques avancées", type: "Fondamentale", ecues: [
+            { name: "Statistiques Avancées", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Bases de données évoluées", type: "Fondamentale", ecues: [
+            { name: "Bases de données évoluées", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Management des SI évolués", type: "Fondamentale", ecues: [
+            { name: "Management des SI évolués", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Formation à la recherche 1", type: "Fondamentale", ecues: [
+            { name: "Anglais (préparation au TOEFL)", credits: 2, coeff: 1 },
+            { name: "Initiation à la recherche", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Optimisation Combinatoire", type: "Optionnelle", ecues: [
+            { name: "Méta-heuristique", credits: 3, coeff: 1.5 },
+            { name: "Optimisation", credits: 3, coeff: 1.5 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Algorithmique", type: "Fondamentale", ecues: [
+            { name: "Génie Algorithmique", credits: 5, coeff: 2.5 }
+          ]},
+          { ue: "Pervasive computing and cloud", type: "Fondamentale", ecues: [
+            { name: "Pervasive computing and cloud", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Systèmes répartis", type: "Fondamentale", ecues: [
+            { name: "Systèmes répartis", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Processus stochastiques", type: "Fondamentale", ecues: [
+            { name: "Processus stochastiques", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Formation à la recherche 2", type: "Fondamentale", ecues: [
+            { name: "Anglais (préparation au TOEFL)", credits: 2, coeff: 1 },
+            { name: "Intelligence économique", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Analyse des données", type: "Optionnelle", ecues: [
+            { name: "Business Intelligence", credits: 3, coeff: 1.5 },
+            { name: "Analyse des réseaux sociaux", credits: 2, coeff: 1 },
+            { name: "Analyse et Traitements des images numériques", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Systèmes intelligents", type: "Fondamentale", ecues: [
+            { name: "Web intelligence", credits: 3, coeff: 1.5 },
+            { name: "Systèmes Multi agents", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Systèmes d'aide à la décision", type: "Fondamentale", ecues: [
+            { name: "Entreposage des données", credits: 3, coeff: 1.5 },
+            { name: "Analyse et fouille de données", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Système d'information avancés", type: "Fondamentale", ecues: [
+            { name: "Méthodes formelles", credits: 3, coeff: 1.5 },
+            { name: "Environnement et interactions H-M", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Modélisation des systèmes d'information", type: "Fondamentale", ecues: [
+            { name: "Modélisation Floue", credits: 3, coeff: 1.5 },
+            { name: "Méthodes de modélisation des SI", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Unité Optionnelle", type: "Fondamentale", ecues: [
+            { name: "Machine Learning", credits: 3, coeff: 1.5 },
+            { name: "Théorie de la décision", credits: 3, coeff: 1.5 }
+          ]}
+        ]
+      }
+    },
+    "MR MOD ET LOG": {
+      name: "Modélisation et Logistique",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Fondamentaux de la mention", type: "Fondamentale", ecues: [
+            { name: "Economie de l'information et de l'incertain", credits: 4, coeff: 2 },
+            { name: "Techniques de la simulation", credits: 2, coeff: 1 }
+          ]},
+          { ue: "UES1 spécifiques au parcours", type: "Fondamentale", ecues: [
+            { name: "Théorie des graphes", credits: 3, coeff: 1.5 },
+            { name: "Recherche opérationnelle", credits: 4, coeff: 2 }
+          ]},
+          { ue: "US2 spécifiques au parcours", type: "Fondamentale", ecues: [
+            { name: "Externalisation et relations partenariales", credits: 4, coeff: 2 },
+            { name: "Politique et stratégie de l'entreprise", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Unité d'enseignement transversale", type: "Transversale", ecues: [
+            { name: "Econométrie avancée des modèles linéaires", credits: 4, coeff: 2 },
+            { name: "Anglais 1", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Unité optionnelle", type: "Optionnelle", ecues: [
+            { name: "Algorithmique", credits: 3, coeff: 1.5 },
+            { name: "Python", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Fondamentaux de la mention", type: "Fondamentale", ecues: [
+            { name: "Théorie des jeux", credits: 2, coeff: 1 },
+            { name: "Econométries des séries temporelles", credits: 4, coeff: 2 }
+          ]},
+          { ue: "US1 spécifiques au parcours", type: "Fondamentale", ecues: [
+            { name: "Méthodes multicritères de décision", credits: 4, coeff: 2 },
+            { name: "Théorie de la décision", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "US2 spécifiques au parcours", type: "Fondamentale", ecues: [
+            { name: "Machine learning", credits: 3, coeff: 1.5 },
+            { name: "Modélisation et traitement des données floues", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Unité transversale", type: "Transversale", ecues: [
+            { name: "Analyse des données et data mining", credits: 4, coeff: 2 },
+            { name: "Anglais 2", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Unité optionnelle", type: "Optionnelle", ecues: [
+            { name: "Ethique et RSE", credits: 2, coeff: 1 },
+            { name: "Management de projet", credits: 3, coeff: 1.5 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Fondamentaux de la mention", type: "Fondamentale", ecues: [
+            { name: "Modélisation économique", credits: 2, coeff: 1 },
+            { name: "Econométrie des données de panel", credits: 4, coeff: 2 }
+          ]},
+          { ue: "US1 spécifiques au parcours", type: "Fondamentale", ecues: [
+            { name: "Calcul stochastique", credits: 3, coeff: 1.5 },
+            { name: "Techniques avancées d'optimisation", credits: 4, coeff: 2 }
+          ]},
+          { ue: "US2 spécifiques au parcours", type: "Fondamentale", ecues: [
+            { name: "Management du système d'information logistique", credits: 2, coeff: 1 },
+            { name: "Gestion de production", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Unité d'enseignement transversale", type: "Transversale", ecues: [
+            { name: "English for scientific research", credits: 2, coeff: 1 },
+            { name: "Méthodologie de la recherche", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Unité optionnelle", type: "Optionnelle", ecues: [
+            { name: "Lean management", credits: 3, coeff: 1.5 },
+            { name: "Méthodes de sélection des portefeuilles", credits: 3, coeff: 1.5 }
+          ]}
+        ]
+      }
+    },
+    "MR APE": {
+      name: "Analyse et Politique Économiques",
+      semesters: {
+        "Semestre 1": [
+          { ue: "Économie du développement et institutions", type: "Fondamentale", ecues: [
+            { name: "Économie du développement", credits: 4, coeff: 2 },
+            { name: "Institutions et développement", credits: 2, coeff: 1 }
+          ]},
+          { ue: "Microéconomie et analyse des inégalités", type: "Fondamentale", ecues: [
+            { name: "Microéconomie avancée", credits: 4, coeff: 2 },
+            { name: "Économie des inégalités et politique de redistribution", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Politiques économiques", type: "Fondamentale", ecues: [
+            { name: "Diagnostics des politiques économiques", credits: 3, coeff: 1.5 },
+            { name: "Économie politique internationale", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Econométrie avancée", type: "Transversale", ecues: [
+            { name: "Anglais 1", credits: 2, coeff: 1 },
+            { name: "Econométrie avancée des modèles linéaires", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Économie de l'environnement et Finances publiques", type: "Optionnelle", ecues: [
+            { name: "Économie de l'environnement et des ressources naturelles", credits: 2, coeff: 1 },
+            { name: "Finances publiques", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 2": [
+          { ue: "Croissance économique approfondie", type: "Fondamentale", ecues: [
+            { name: "Financement du développement", credits: 2, coeff: 1 },
+            { name: "Théories de la croissance économique", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Politiques macroéconomiques et économie spatiale", type: "Fondamentale", ecues: [
+            { name: "Economie spatiale", credits: 3, coeff: 1.5 },
+            { name: "Macroéconomie approfondie", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Évaluation des politiques", type: "Fondamentale", ecues: [
+            { name: "Évaluation des politiques publiques", credits: 3, coeff: 1.5 },
+            { name: "Politiques du développement", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Analyse des données", type: "Transversale", ecues: [
+            { name: "Anglais 2", credits: 2, coeff: 1 },
+            { name: "Analyse des données et data mining", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Économie de l'incertain", type: "Optionnelle", ecues: [
+            { name: "Économie de l'incertain et de l'information", credits: 2, coeff: 1 },
+            { name: "Crise et répartition", credits: 2, coeff: 1 }
+          ]}
+        ],
+        "Semestre 3": [
+          { ue: "Évaluation des projets et modélisation", type: "Fondamentale", ecues: [
+            { name: "Evaluation économique des projets de développement", credits: 2, coeff: 1 },
+            { name: "Modélisation statistique spatiale", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Gouvernance territoriale", type: "Fondamentale", ecues: [
+            { name: "Gouvernance territoriale et développement", credits: 4, coeff: 2 },
+            { name: "Séminaires de recherche", credits: 3, coeff: 1.5 }
+          ]},
+          { ue: "Méthodes quantitatives et outils pour l'économie", type: "Fondamentale", ecues: [
+            { name: "Econométrie des données de panel", credits: 3, coeff: 1.5 },
+            { name: "Économie publique avancée", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Initiation à la recherche scientifique", type: "Transversale", ecues: [
+            { name: "English for Scientific Research", credits: 2, coeff: 1 },
+            { name: "Méthodologie de la recherche", credits: 4, coeff: 2 }
+          ]},
+          { ue: "Politique de l'emploi et décisions publiques", type: "Optionnelle", ecues: [
+            { name: "Économie du travail et politique de l'emploi", credits: 2, coeff: 1 },
+            { name: "Décisions publiques et risques", credits: 2, coeff: 1 }
+          ]}
+        ]
+      }
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let currentType = '';
+let currentSpec = '';
+let currentData = null;
+let notes = {}; // key: semName_ueIdx_ecueIdx -> note value
+
+// ═══════════════════════════════════════════════════════
+//  SELECTORS
+// ═══════════════════════════════════════════════════════
+function updateSpecialite() {
+  const type = document.getElementById('selType').value;
+  const sel = document.getElementById('selSpec');
+  sel.innerHTML = '<option value="">— Choisir la spécialité —</option>';
+  sel.disabled = true;
+  document.getElementById('selSem').disabled = true;
+  document.getElementById('selSem').innerHTML = '<option value="">— d\'abord choisir la spécialité —</option>';
+
+  if (!type) return;
+  const progs = PROGRAMMES[type];
+  Object.entries(progs).forEach(([code, data]) => {
+    const o = document.createElement('option');
+    o.value = code;
+    o.textContent = `${code} — ${data.name}`;
+    sel.appendChild(o);
+  });
+  sel.disabled = false;
+}
+
+function updateSemestres() {
+  const type = document.getElementById('selType').value;
+  const spec = document.getElementById('selSpec').value;
+  const sel = document.getElementById('selSem');
+  sel.innerHTML = '<option value="">— Choisir le semestre —</option>';
+  sel.disabled = true;
+  if (!spec) return;
+
+  const prog = PROGRAMMES[type][spec];
+  Object.keys(prog.semesters).forEach(sem => {
+    const o = document.createElement('option');
+    o.value = sem;
+    o.textContent = sem;
+    sel.appendChild(o);
+  });
+  sel.disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════
+//  LOAD SUBJECTS
+// ═══════════════════════════════════════════════════════
+function loadSubjects() {
+  const type = document.getElementById('selType').value;
+  const spec = document.getElementById('selSpec').value;
+  const sem  = document.getElementById('selSem').value;
+
+  if (!type || !spec || !sem) {
+    alert('Veuillez sélectionner le type de diplôme, la spécialité et le semestre.');
+    return;
+  }
+
+  currentType = type;
+  currentSpec = spec;
+  currentData = PROGRAMMES[type][spec];
+
+  document.getElementById('step2Title').innerHTML = `<div class="icon">✏️</div> ${spec} — ${currentData.name} &nbsp; <span style="color:var(--muted);font-size:13px;font-weight:400">${sem}</span>`;
+
+  // Build info chips
+  const sems = Object.keys(currentData.semesters);
+  const chips = document.getElementById('infoChips');
+  chips.innerHTML = sems.map(s => `<span class="info-chip">📅 ${s}</span>`).join('') +
+    `<span class="info-chip" style="margin-left:0">🎯 ${type === 'master' ? 'Mastère Professionnel' : 'Mastère de Recherche'}</span>`;
+
+  // Build sem tabs
+  const tabsEl = document.getElementById('semTabs');
+  tabsEl.innerHTML = sems.map((s, i) => `<button class="sem-tab ${s === sem ? 'active' : ''}" onclick="switchSem('${s}', this)">${s}</button>`).join('');
+
+  renderTable(sem);
+
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  document.getElementById('step3').classList.add('hidden');
+
+  setStep(2);
+}
+
+function switchSem(sem, btn) {
+  document.querySelectorAll('.sem-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(sem);
+}
+
+function renderTable(sem) {
+  const ues = currentData.semesters[sem];
+  const tbody = document.getElementById('subjectsBody');
+  tbody.innerHTML = '';
+
+  ues.forEach((ue, ueIdx) => {
+    // UE row
+    const ueTr = document.createElement('tr');
+    ueTr.className = 'ue-row';
+    ueTr.innerHTML = `<td colspan="5">
+      <span class="badge badge-${ue.type === 'Fondamentale' ? 'fond' : ue.type === 'Optionnelle' ? 'opt' : 'trans'}">${ue.type}</span>
+      &nbsp; UE — ${ue.ue}
+    </td>`;
+    tbody.appendChild(ueTr);
+
+    // ECUEs
+    ue.ecues.forEach((ecue, ecueIdx) => {
+      const key = `${sem}_${ueIdx}_${ecueIdx}`;
+      const savedNote = notes[key] !== undefined ? notes[key] : '';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="subject-name">${ecue.name}</td>
+        <td><span class="badge badge-${ue.type === 'Fondamentale' ? 'fond' : ue.type === 'Optionnelle' ? 'opt' : 'trans'}">${ue.type.substring(0,4)}</span></td>
+        <td><span class="coeff-badge">${ecue.credits} cr</span></td>
+        <td><span class="coeff-badge">×${ecue.coeff}</span></td>
+        <td>
+          <input type="number" class="note-input" min="0" max="20" step="0.25"
+            placeholder="—"
+            value="${savedNote}"
+            data-key="${key}"
+            onchange="saveNote(this)"
+            oninput="colorNote(this)">
+        </td>`;
+      tbody.appendChild(tr);
+
+      // Color the saved note
+      if (savedNote !== '') {
+        setTimeout(() => {
+          const inp = tbody.querySelector(`[data-key="${key}"]`);
+          if (inp) colorNote(inp);
+        }, 0);
+      }
+    });
+  });
+}
+
+function saveNote(el) {
+  const val = parseFloat(el.value);
+  if (el.value === '' || isNaN(val)) {
+    delete notes[el.dataset.key];
+  } else {
+    notes[el.dataset.key] = Math.min(20, Math.max(0, val));
+    el.value = notes[el.dataset.key];
+  }
+}
+
+function colorNote(el) {
+  const v = parseFloat(el.value);
+  el.style.color = isNaN(v) ? '' : v >= 10 ? '#10b981' : v >= 7 ? '#f59e0b' : '#ef4444';
+}
+
+// ═══════════════════════════════════════════════════════
+//  CALCULATE
+// ═══════════════════════════════════════════════════════
+function calculate() {
+  // Check if at least one note entered
+  if (Object.keys(notes).length === 0) {
+    alert('Veuillez saisir au moins une note avant de calculer.');
+    return;
+  }
+
+  let totalPoints = 0, totalCoeff = 0;
+  const ueBreakdown = [];
+  let totalCredits = 0, earnedCredits = 0;
+  const semesters = currentData.semesters;
+
+  // For each semester
+  Object.entries(semesters).forEach(([sem, ues]) => {
+    ues.forEach((ue, ueIdx) => {
+      let uePoints = 0, ueCoeff = 0, ueHasNotes = false;
+
+      ue.ecues.forEach((ecue, ecueIdx) => {
+        const key = `${sem}_${ueIdx}_${ecueIdx}`;
+        totalCredits += ecue.credits;
+        if (notes[key] !== undefined) {
+          uePoints += notes[key] * ecue.coeff;
+          ueCoeff += ecue.coeff;
+          ueHasNotes = true;
+          if (notes[key] >= 10) earnedCredits += ecue.credits;
+        }
+      });
+
+      if (ueHasNotes) {
+        const ueMoy = ueCoeff > 0 ? uePoints / ueCoeff : 0;
+        ueBreakdown.push({
+          name: ue.ue,
+          sem,
+          type: ue.type,
+          moyenne: ueMoy,
+          coeff: ueCoeff,
+          credits: ue.ecues.reduce((a, e) => a + e.credits, 0)
+        });
+        totalPoints += uePoints;
+        totalCoeff += ueCoeff;
+      }
+    });
+  });
+
+  const moyenne = totalCoeff > 0 ? totalPoints / totalCoeff : 0;
+
+  // Mention
+  let mention, mentionClass;
+  if (moyenne >= 16) { mention = 'Très Bien'; mentionClass = 'mention-tb'; }
+  else if (moyenne >= 14) { mention = 'Bien'; mentionClass = 'mention-b'; }
+  else if (moyenne >= 12) { mention = 'Assez Bien'; mentionClass = 'mention-ab'; }
+  else if (moyenne >= 10) { mention = 'Passable'; mentionClass = 'mention-p'; }
+  else { mention = 'Insuffisant'; mentionClass = 'mention-r'; }
+
+  // Render result cards
+  const cards = document.getElementById('resultCards');
+  cards.innerHTML = `
+    <div class="result-card main">
+      <div class="label">Moyenne Générale</div>
+      <div class="value">${moyenne.toFixed(2)}</div>
+      <div class="sub">/20</div>
+      <div class="mention-badge ${mentionClass}">${mention}</div>
+    </div>
+    <div class="result-card">
+      <div class="label">Matières notées</div>
+      <div class="value">${Object.keys(notes).length}</div>
+      <div class="sub">sur ${Object.values(semesters).flat().reduce((a,u) => a+u.ecues.length, 0)}</div>
+    </div>
+    <div class="result-card">
+      <div class="label">Crédits validés</div>
+      <div class="value">${earnedCredits}</div>
+      <div class="sub">sur ${totalCredits} ECTS</div>
+    </div>
+    <div class="result-card">
+      <div class="label">Taux de réussite</div>
+      <div class="value">${totalCredits > 0 ? Math.round(earnedCredits / totalCredits * 100) : 0}<span style="font-size:22px">%</span></div>
+      <div class="sub">des crédits validés</div>
+    </div>`;
+
+  // Render breakdown
+  const tbody = document.getElementById('breakdownBody');
+  tbody.innerHTML = '';
+  ueBreakdown.forEach(ue => {
+    const pct = Math.min(100, (ue.moyenne / 20) * 100);
+    const color = ue.moyenne >= 10 ? '#10b981' : ue.moyenne >= 7 ? '#f59e0b' : '#ef4444';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight:500">${ue.name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${ue.sem}</div>
+      </td>
+      <td>
+        <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:${color}">${ue.moyenne.toFixed(2)}</span>
+        <span style="font-size:11px;color:var(--muted)">/20</span>
+      </td>
+      <td><span class="coeff-badge">${ue.credits} cr</span></td>
+      <td style="min-width:120px">
+        <div class="prog-bar">
+          <div class="prog-fill" style="width:${pct}%;background:${pct >= 50 ? 'linear-gradient(90deg,var(--accent),var(--gold))' : '#ef4444'}"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">${pct.toFixed(0)}%</div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+  setStep(3);
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════════
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById(`s${i}`).classList.toggle('active', i === n);
+  });
+}
+
+function goBack() {
+  notes = {};
+  currentData = null;
+  document.getElementById('step1').classList.remove('hidden');
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('selType').value = '';
+  document.getElementById('selSpec').innerHTML = '<option value="">— d\'abord choisir le type —</option>';
+  document.getElementById('selSpec').disabled = true;
+  document.getElementById('selSem').innerHTML = '<option value="">— d\'abord choisir la spécialité —</option>';
+  document.getElementById('selSem').disabled = true;
+  setStep(1);
+}
+
+function goToStep2() {
+  document.getElementById('step2').classList.remove('hidden');
+  document.getElementById('step3').classList.add('hidden');
+  setStep(2);
+}
+
+function clearNotes() {
+  if (!confirm('Effacer toutes les notes saisies ?')) return;
+  notes = {};
+  document.querySelectorAll('.note-input').forEach(inp => {
+    inp.value = '';
+    inp.style.color = '';
+  });
+}
+
+function printResult() { window.print(); }
+</script>
+</body>
+</html>
